@@ -1,5 +1,5 @@
 Integrantes: 
-Gabriel Garcia
+Gabriel Garcia,
 Maximiliano Bravo
 
 Fecha de vigencia:
