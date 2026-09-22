@@ -400,3 +400,75 @@ main {
     font-weight: 300;
     color: var(--color-5);
 }
+
+/* =========================================
+   DISEÑO RESPONSIVO (MÓVILES Y TABLETS)
+========================================= */
+@media (max-width: 768px) {
+    /* Navbar apilado */
+    .navbar {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .nav-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+    }
+
+    #search-container {
+        width: 100%;
+        order: 3; /* Envía el buscador abajo de los botones */
+        margin-top: 0.5rem;
+    }
+
+    #search-container input {
+        width: 100%;
+    }
+
+    /* Viñeta del Carrito centrada */
+    .mini-carrito {
+        top: 160px; /* Ajusta la altura debajo del navbar apilado */
+        right: 50%;
+        transform: translateX(50%);
+        width: 90%;
+        max-width: 320px;
+    }
+
+    /* Carrusel más pequeño */
+    .custom-carousel {
+        height: 200px;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+
+    /* Ajuste de espaciados en secciones */
+    .section-container {
+        padding: 2rem 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    /* Tarjetas adaptadas */
+    .product-card {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    /* Footer apilado */
+    .footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 2rem 1.5rem;
+    }
+}
