@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfiExpress - Categorías</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.php" class="nav-btn">Inicio</a>
+        <div class="logo">OfiExpress</div>
+        <div class="nav-actions">
+            <button id="btn-carrito" class="nav-btn">🛒 Carrito</button>
+        </div>
+    </nav>
+
+    <!-- Mini Carrito (Viñeta) compartido -->
+    <div id="mini-carrito" class="mini-carrito hidden">
+        <h3>Tu Carrito</h3>
+        <div class="mini-carrito-items">
+            <p>El carrito está vacío.</p>
+        </div>
+        <a href="carrito.php" class="btn-ir-carrito">Ver Carrito Completo</a>
+    </div>
+
+    <main>
+        <section class="section-container">
+            <div class="section-title" style="font-size: 2rem;">Nuestro Catálogo</div>
+
+            <!-- Categoría 1: Útiles Escolares -->
+            <h2 class="category-header">📚 Útiles Escolares</h2>
+            <div class="grid">
+                <div class="product-card">
+                    <img src="img/imagen1.jpg" alt="Lápiz Grafito">
+                    <h3 class="product-title">Set 3 Lápices Grafito HB</h3>
+                    <p class="product-price">$1.200</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen2.jpg" alt="Goma de Borrar">
+                    <h3 class="product-title">Goma de Borrar Miga x2</h3>
+                    <p class="product-price">$800</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen3.jpg" alt="Regla">
+                    <h3 class="product-title">Regla Acrílica 30cm</h3>
+                    <p class="product-price">$1.000</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+            </div>
+
+            <!-- Categoría 2: Cuadernos -->
+            <h2 class="category-header">📓 Cuadernos y Papel</h2>
+            <div class="grid">
+                <div class="product-card">
+                    <img src="img/imagen4.jpg" alt="Cuaderno Matemáticas">
+                    <h3 class="product-title">Cuaderno Universitario Mat.</h3>
+                    <p class="product-price">$2.500</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen5.png" alt="Cuaderno Croquis">
+                    <h3 class="product-title">Block de Dibujo Mediano</h3>
+                    <p class="product-price">$1.800</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen6.jpg" alt="Notas Adhesivas">
+                    <h3 class="product-title">Notas Adhesivas 100h</h3>
+                    <p class="product-price">$1.500</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+            </div>
+
+            <!-- Categoría 3: Oficina -->
+            <h2 class="category-header">🗂️ Oficina</h2>
+            <div class="grid">
+                <div class="product-card">
+                    <img src="img/imagen7.png" alt="Resma de Papel">
+                    <h3 class="product-title">Resma Papel Carta 500h</h3>
+                    <p class="product-price">$5.500</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen8.jpg" alt="Archivador">
+                    <h3 class="product-title">Archivador Oficio Lomo Ancho</h3>
+                    <p class="product-price">$3.200</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen9.jpg" alt="Clips">
+                    <h3 class="product-title">Caja Clips Metálicos x100</h3>
+                    <p class="product-price">$900</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+            </div>
+            <!-- Categoría 4: Arte y Diseño -->
+            <h2 class="category-header">🎨 Arte y Diseño</h2>
+            <div class="grid">
+                <div class="product-card">
+                    <img src="img/imagen10.jpg" alt="Set de Acuarelas">
+                    <h3 class="product-title">Set 12 Acuarelas Profesionales</h3>
+                    <p class="product-price">$8.900</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen11.jpg" alt="Set de Pinceles">
+                    <h3 class="product-title">Estuche 6 Pinceles Mixtos</h3>
+                    <p class="product-price">$4.500</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <div class="product-card">
+                    <img src="img/imagen12.jpg" alt="Lápices de Colores">
+                    <h3 class="product-title">Caja 24 Lápices Acuarelables</h3>
+                    <p class="product-price">$12.000</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="contacto.php">Contacto, servicio al cliente, etc.</a>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

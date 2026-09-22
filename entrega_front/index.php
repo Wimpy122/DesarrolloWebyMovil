@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfiExpress - Inicio</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="categorias.php" class="nav-btn">Categorías</a>
+        <div class="logo">OfiExpress</div>
+        <div class="nav-actions">
+            <button id="btn-buscar" class="nav-btn">🔍 Búsqueda</button>
+            <div id="search-container" class="hidden">
+                <input type="text" placeholder="Buscar productos...">
+            </div>
+            <button id="btn-carrito" class="nav-btn">🛒 Carrito</button>
+        </div>
+    </nav>
+    
+    <!-- Mini Carrito (Viñeta) -->
+    <div id="mini-carrito" class="mini-carrito hidden">
+        <h3>Tu Carrito</h3>
+        <div class="mini-carrito-items">
+            <p>El carrito está vacío.</p>
+        </div>
+        <a href="carrito.php" class="btn-ir-carrito">Ver Carrito Completo</a>
+    </div>
+
+    <header class="custom-carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="img/imagen2.jpg" alt="Ofertas Escolares">
+            </div>
+            <div class="carousel-item">
+                <img src="img/imagen8.jpg" alt="Nueva Colección Oficina">
+            </div>
+            <div class="carousel-item">
+                <img src="img/imagen11.jpg" alt="Descuentos en Arte">
+            </div>
+        </div>
+        <!-- Controles -->
+        <button class="carousel-control-prev" onclick="moveSlide(-1)">&#10094;</button>
+        <button class="carousel-control-next" onclick="moveSlide(1)">&#10095;</button>
+        <!-- Indicadores (Puntitos) -->
+        <div class="carousel-indicators">
+            <span class="dot active" onclick="currentSlide(0)"></span>
+            <span class="dot" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+        </div>
+    </header>
+
+    <main>
+        <section class="section-container">
+            <div class="section-title">Categorías Destacadas</div>
+            <div class="grid">
+                <a href="categorias.php" style="text-decoration: none;">
+                    <div class="box">Útiles Escolares</div>
+                </a>
+                <a href="categorias.php" style="text-decoration: none;">
+                    <div class="box">Oficina</div>
+                </a>
+                <a href="categorias.php" style="text-decoration: none;">
+                    <div class="box">Arte y Diseño</div>
+                </a>
+                <a href="categorias.php" style="text-decoration: none;">
+                    <div class="box">Cuadernos</div>
+                </a>
+            </div>
+        </section>
+
+        <section class="section-container">
+            <div class="section-title">Productos Destacados</div>
+            <div class="grid">
+                <!-- Producto 1 -->
+                <div class="product-card">
+                    <img src="img/imagen1.jpg" alt="Lápiz Pasta Azul">
+                    <h3 class="product-title">Set 3 Lápices Grafito HB</h3>
+                    <p class="product-price">$1.200</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <!-- Producto 2 -->
+                <div class="product-card">
+                    <img src="img/imagen4.jpg" alt="Cuaderno Matemáticas">
+                    <h3 class="product-title">Cuaderno Universitario Mat.</h3>
+                    <p class="product-price">$2.500</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <!-- Producto 3 -->
+                <div class="product-card">
+                    <img src="img/imagen7.png" alt="Resma de Papel">
+                    <h3 class="product-title">Resma Papel Carta 500h</h3>
+                    <p class="product-price">$5.500</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+                <!-- Producto 4 -->
+                <div class="product-card">
+                    <img src="img/imagen9.jpg" alt="Clips">
+                    <h3 class="product-title">Caja Clips Metálicos x100</h3>
+                    <p class="product-price">$900</p>
+                    <button class="btn-add">Agregar al Carrito</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="contacto.php">Contacto, servicio al cliente, etc.</a>
+        </div>
+    </footer>
+    
+    <script src="app.js"></script>
+</body>
+</html>

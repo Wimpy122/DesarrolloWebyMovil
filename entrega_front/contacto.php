@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfiExpress - Contacto y Servicio al Cliente</title>
+    <!-- Asegurándonos de usar estilos.css como tienes en tus archivos -->
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.php" class="nav-btn">Inicio</a>
+        <div class="logo">OfiExpress</div>
+        <div class="nav-actions">
+            <a href="categorias.php" class="nav-btn">Categorías</a>
+            <button id="btn-carrito" class="nav-btn">🛒 Carrito</button>
+        </div>
+    </nav>
+
+    <!-- Mini Carrito (Viñeta) compartido -->
+    <div id="mini-carrito" class="mini-carrito hidden">
+        <h3>Tu Carrito</h3>
+        <div class="mini-carrito-items">
+            <p>El carrito está vacío.</p>
+        </div>
+        <a href="carrito.php" class="btn-ir-carrito">Ver Carrito Completo</a>
+    </div>
+
+    <main>
+        <section class="section-container">
+            <div class="section-title">Contacto y Servicio al Cliente</div>
+            
+            <!-- Contenedor del formulario centrado -->
+            <div style="max-width: 600px; margin: 0 auto; background-color: var(--color-1); padding: 2rem; border: 2px solid var(--color-5); border-radius: 8px;">
+                <h3 style="color: var(--color-2); margin-bottom: 1.5rem; text-align: center;">Envíanos un mensaje</h3>
+                
+                <form action="#" method="POST" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <label for="nombre" style="display: block; margin-bottom: 0.5rem; color: var(--color-6); font-weight: bold;">Nombre Completo:</label>
+                        <input type="text" id="nombre" name="nombre" placeholder="Ej. Juan Pérez" style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-5); border-radius: 4px; outline: none;" required>
+                    </div>
+                    <div>
+                        <label for="email" style="display: block; margin-bottom: 0.5rem; color: var(--color-6); font-weight: bold;">Correo Electrónico:</label>
+                        <input type="email" id="email" name="email" placeholder="tu@correo.com" style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-5); border-radius: 4px; outline: none;" required>
+                    </div>
+                    <div>
+                        <label for="mensaje" style="display: block; margin-bottom: 0.5rem; color: var(--color-6); font-weight: bold;">Mensaje o Consulta:</label>
+                        <textarea id="mensaje" name="mensaje" rows="5" placeholder="Escribe aquí tu consulta sobre productos, envíos, etc..." style="width: 100%; padding: 0.8rem; border: 1px solid var(--color-5); border-radius: 4px; outline: none;" required></textarea>
+                    </div>
+                    <button type="submit" class="nav-btn" style="align-self: center; margin-top: 1rem; width: 100%; text-align: center; font-weight: bold;">Enviar Mensaje</button>
+                </form>
+                
+                <!-- Datos de contacto extra -->
+                <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-5); color: var(--color-6); text-align: center;">
+                    <h4 style="color: var(--color-2); margin-bottom: 1rem;">Otros medios de contacto</h4>
+                    <p style="margin-bottom: 0.5rem;">📞 Teléfono: +56 9 1234 5678</p>
+                    <p style="margin-bottom: 0.5rem;">📧 Email: soporte@ofiexpress.cl</p>
+                    <p>📍 Dirección: Av. Principal 123, Santiago, Chile</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="contacto.php">Contacto, servicio al cliente, etc.</a>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

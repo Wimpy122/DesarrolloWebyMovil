@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfiExpress - Tu Carrito</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.php" class="nav-btn">Inicio</a>
+        <div class="logo">OfiExpress</div>
+        <div class="nav-actions">
+            <a href="categorias.php" class="nav-btn">Categorías</a>
+        </div>
+    </nav>
+
+    <!-- Mini Carrito (Oculto pero necesario para el JS) -->
+    <div id="mini-carrito" class="mini-carrito hidden">
+        <div class="mini-carrito-items"></div>
+    </div>
+
+    <main>
+        <section class="section-container">
+            <div class="section-title">Tu Carrito de Compras</div>
+            
+            <div style="background-color: var(--color-1); border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.04); overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead style="background-color: var(--color-2); color: white;">
+                        <tr>
+                            <th style="padding: 1rem;">Imagen</th>
+                            <th style="padding: 1rem;">Producto</th>
+                            <th style="padding: 1rem;">Precio</th>
+                            <th style="padding: 1rem;">Cantidad</th>
+                            <th style="padding: 1rem;">Subtotal</th>
+                            <th style="padding: 1rem;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-table-body">
+                        <!-- El JS inyecta las filas aquí -->
+                    </tbody>
+                </table>
+                
+                <div style="padding: 2rem; display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-light);">
+                    <a href="categorias.php" class="nav-btn" style="background-color: var(--color-6);">Seguir Comprando</a>
+                    <div style="text-align: right;">
+                        <h2 style="color: var(--color-4); margin-bottom: 1rem;">Total a Pagar: <span id="cart-total" style="color: var(--color-3);">$0</span></h2>
+                        <button class="nav-btn" onclick="alert('Funcionalidad de pago simulada para la entrega.')" style="padding: 1rem 2rem; font-size: 1.1rem;">Proceder al Pago</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="contacto.php">Contacto, servicio al cliente, etc.</a>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
