@@ -1,0 +1,18 @@
+syntax = "proto3";
+package inventory;
+service InventoryService {
+  rpc ReservarStock (ReservaRequest) returns (ReservaResponse);
+}
+message ItemReserva {
+  int32 producto_id = 1;
+  int32 cantidad = 2;
+}
+message ReservaRequest {
+  string pedido_id = 1;
+  repeated ItemReserva items = 2;
+}
+message ReservaResponse {
+  bool exito = 1;
+  string mensaje = 2;
+  int32 tiempo_expiracion_segundos = 3;
+}
