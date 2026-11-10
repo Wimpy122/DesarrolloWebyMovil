@@ -1,4 +1,4 @@
-[  
+[
   {
     "modulo": "Módulo 1: Catálogo y Estructura Base",
     "tienda": "OfiExpress",
@@ -94,56 +94,6 @@
             "imagen": "img/imagen12.jpg"
           }
         ]
-      }
-    ]
-  },
-
-  {
-    "modulo": "Módulo 3: Contacto y Servicio al Cliente",
-    "formulario": {
-      "accion": "#",
-      "metodo": "POST",
-      "campos": [
-        {
-          "nombre": "nombre",
-          "tipo": "text",
-          "etiqueta": "Nombre Completo",
-          "placeholder": "Ej. Juan Pérez",
-          "requerido": true
-        },
-        {
-          "nombre": "email",
-          "tipo": "email",
-          "etiqueta": "Correo Electrónico",
-          "placeholder": "tu@correo.com",
-          "requerido": true
-        },
-        {
-          "nombre": "mensaje",
-          "tipo": "textarea",
-          "filas": 5,
-          "etiqueta": "Mensaje o Consulta",
-          "placeholder": "Escribe aquí tu consulta sobre productos, envíos, etc...",
-          "requerido": true
-        }
-      ]
-    }
-  },
-
-  {
-    "modulo": "Módulo 4: Interactividad y Multimedia",
-    "componentes": [
-      {
-        "nombre": "Carrusel Dinámico",
-        "elementos_visuales": ["carousel-inner", "carousel-item", "dot"],
-        "controles": ["moveSlide(step)", "currentSlide(index)"],
-        "automatizacion": "setInterval de 5000ms (5 segundos)"
-      },
-      {
-        "nombre": "Buscador Interactivo",
-        "gatillo": "btn-buscar",
-        "contenedor": "search-container",
-        "comportamiento": "Alterna clase 'hidden' y hace focus automático en el input"
       }
     ]
   }
