@@ -1,0 +1,5 @@
+type Producto { id: ID!, titulo: String!, precio: Int!, imagen: String! }
+type ItemPedido { id: ID!, cantidad: Int!, subtotal: Int!, producto: Producto! }
+type ClientePerfil { id: ID!, nombre: String!, email: String! }
+type PedidoResumen { id: ID!, estado: String!, total: Int!, cliente: ClientePerfil!, items: [ItemPedido!]!, fechaCreacion: String! }
+type Query { obtenerPedidoResumen(pedidoId: ID!): PedidoResumen }
