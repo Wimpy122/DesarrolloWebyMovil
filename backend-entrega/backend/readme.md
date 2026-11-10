@@ -1,136 +1,398 @@
-### Modulo 1
+# Documentación Técnica y README de Arquitectura — Backend Seguro OfiExpress (Módulos 1 al 10)
 
-| ID | Pantalla y acción | Propósito | Verbo y ruta propuesta | Entrada | Salida | Reglas y errores | Clasificación de datos | Acceso |
-|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| S01 | `index.html` / `categorias.html` -> Cargar catálogo | Consultar productos disponibles | GET `/api/v1/products` | Ninguna (cuerpo vacío). Opcional: parámetro `?q=` para buscador. | 200 OK con lista de objetos `{id, titulo, precio, imagen}`. | 400 ante filtros inválidos. | Dato público (catálogo). | Anónimo |
-| S02 | `categorias.html` -> Agregar al carro | Registrar ítem en el pedido activo | POST `/api/v1/orders/cart` | `{ "producto_id": int, "cantidad": int }` | 201 Created con el subtotal actualizado. | 400 si `cantidad < 1` o producto no existe en BD. | Restringido (pedido del usuario). | Autenticado |
-| S03 | `carrito.html` -> Modificar cantidad | Actualizar un ítem | PUT `/api/v1/orders/cart/{item_id}` | `{ "cantidad": int }` | 200 OK con el total actualizado. | 404 si el ítem no está en el carro; 400 si `cantidad < 1`. | Restringido. | Autenticado |
-| S04 | `carrito.html` -> Eliminar de carro | Quitar ítem | DELETE `/api/v1/orders/cart/{item_id}` | Ninguna. | 204 No Content. | 404 si el ítem no existe en el carro propio. | Restringido. | Autenticado |
-| S05 | `contacto.html` -> Enviar mensaje | Registrar consulta de soporte | POST `/api/v1/support/contact` | `{ "nombre": string, "email": string, "mensaje": string }` | 201 Created confirmando recepción. | 400 si falta el email o el mensaje está vacío. | Dato personal. | Anónimo / Autenticado |
+## Resumen Ejecutivo y Caso de Negocio
 
-<br>
+El presente documento constituye la especificación técnica completa e informe de arquitectura para el backend seguro de la papelería **OfiExpress** (Caso de Negocio N° 37: útiles de oficina y escolares).
 
-
-### Módulo 2: Clases y cardinalidades del dominio
-
-| Clase Origen | Clase Destino | Multiplicidades | Justificación de la regla de negocio |
-|:---|:---|:---|:---|
-| Categoria | Producto | 1 -> 0..* | Una categoría (ej. "Útiles Escolares") agrupa múltiples productos. Un producto pertenece a una sola categoría principal. |
-| Cliente | Pedido | 1 -> 0..* | Un cliente registrado puede no haber comprado nada aún (0) o tener un historial con múltiples pedidos (*). |
-| Pedido | DetallePedido | 1 -> 1..* | Un pedido que se procesa hacia el pago debe contener al menos un ítem agregado desde el frontend. |
-| CatalogService | ProductoDTO | Dependencia | El servicio de catálogo depende del DTO para enviar la respuesta JSON al frontend sin exponer atributos internos de la base de datos. |
-
-<br>
-
-
-### 2.1 Reglas de Negocio Implementadas 
-
-| Operación / Acción | Regla de Negocio / Comportamiento del Sistema | Mecanismo Técnico / Función Asociada |
-| :--- | :--- | :--- |
-| **Agregar Producto (`.btn-add`)** | Al hacer clic en "Agregar al Carrito", el sistema busca si el producto ya existe en el arreglo. Si existe, incrementa su `cantidad` en `+1`. Si no existe, lo añade como un nuevo objeto con `cantidad: 1`. | `carrito.push(...)` o incremento de propiedad `cantidad`. |
-| **Persistencia de Datos** | Cada vez que el carrito sufre una modificación (agregar, cambiar cantidad o eliminar), se actualiza automáticamente el almacenamiento local del navegador para evitar pérdida de datos ante recargas. | `localStorage.setItem("ofiExpressCart", JSON.stringify(carrito))`. |
-| **Modificación de Cantidad** | El usuario puede alterar la cantidad directamente desde la vista del carrito (`carrito.html`). El input está condicionado con un límite estricto (`min="1"`) y se procesa mediante un parseo numérico para prevenir errores. | `cambiarCantidad(index, nuevaCantidad)` con `parseInt()`. |
-| **Eliminación de Ítem** | Permite remover una línea completa de producto del carrito utilizando su índice dentro del arreglo. | `carrito.splice(index, 1)` seguido de `guardarCarrito()`. |
-| **Cálculo de Totales y Formato CLP** | El sistema recorre iterativamente el carrito multiplicando `precio * cantidad` para obtener los subtotales, sumándolos para el total general y aplicando formato de moneda chilena. | `.toLocaleString("es-CL")` con prefijo `$`. |
-
-
+Partiendo de las pantallas, la interfaz responsiva y los requerimientos de interacción desarrollados para el frontend en la Evaluación 1, este trabajo diseña, implementa y valida un backend modular basado en microservicios, seguridad en capas, enrutamiento mediante API Gateway, agregaciones con GraphQL Gateway y sincronización interna con gRPC.
 
 ---
 
-### 2.2 Consideración de Seguridad y Validación
-* **Sanitización de Precios:** Al extraer el precio desde la tarjeta visual (`.product-price`), se limpian de forma programática los símbolos de moneda (`$`) y los puntos de miles para transformarlos en enteros puros, evitando inyecciones de texto que corrompan las operaciones matemáticas.
-* **Manejo de Estados Vacíos / Nulos:** Si el almacenamiento local es alterado o está vacío, el sistema utiliza un operador de cortocircuito (`|| []`) para prevenir excepciones de referencia nula, mostrando de forma limpia el mensaje *"El carrito está vacío"*.
+## Módulo 1: Servicios Derivados del Frontend
 
- **UML** 
+### 1.1 Matriz de Trazabilidad y Contratos de Servicios (S01 - S05)
 
-### 2.3.1 Explicación de las Clases
-**Categoria:** Agrupa lógicamente los productos (Útiles Escolares, Cuadernos y Papel, Oficina, Arte y Diseño).   
-**Producto:** Contiene los atributos básicos de cada artículo del catálogo (id, titulo, precio en CLP, y la ruta de la imagen).   
-**CarritoCompras:** Administra el arreglo global de elementos y expone los métodos de negocio (agregarProducto, cambiarCantidad, eliminarProducto, guardarCarrito para persistir en LocalStorage, y el cálculo del total).   
-**ItemCarrito:** Representa la línea específica dentro del carrito que asocia un Producto con una cantidad numérica entera.
+Cada interacción del usuario en la interfaz web (`index.html`, `categorias.html`, `carrito.html`, `contacto.html`) se mapea hacia una operación de backend estructurada con sus parámetros de entrada, respuesta, reglas de negocio y clasificación de seguridad.
 
-### 2.3.2 Diagrama de Casos de Uso (Actores y Funcionalidades)
-En formato estructurado para la documentación:
-Actor Principal: Cliente / Usuario visitante.
-Casos de Uso (UC):
-    UC-01: Explorar Catálogo: El usuario visualiza la página de inicio o navega por categorías y productos destacados.   
-    UC-02: Buscar Productos: El usuario despliega el buscador interactivo e ingresa términos de texto para filtrar artículos.   
-    UC-03: Gestionar Carrito de Compras:
-        Sub-caso 3.1: Agregar producto al carro (incrementa cantidad si ya existe o crea un nuevo registro).   
-        Sub-caso 3.2: Ver mini carrito (viñeta flotante de resumen).   
-        Sub-caso 3.3: Modificar cantidades o eliminar ítems en la vista de carrito completo (carrito.html).   
-    UC-04: Enviar Mensaje de Contacto: El usuario completa el formulario en contacto.html con nombre, correo y mensaje.
+| ID | Pantalla y Acción | Propósito | Verbo y Ruta Propuesta | Entrada | Salida | Reglas y Errores | Clasificación de Datos | Acceso |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| **S01** | `index.html` / `categorias.html` -> Cargar catálogo | Consultar productos disponibles | `GET /api/v1/products` | Ninguna (cuerpo vacío). Opcional: `?q=` para filtro de texto. | 200 OK con lista de objetos `{id, titulo, precio, imagen}`. | 400 ante filtros inválidos. Límite de tasa 100 req/min. | Dato público (Catálogo). | Anónimo |
+| **S02** | `categorias.html` -> Agregar al carro | Registrar ítem en el pedido activo | `POST /api/v1/orders/cart` | `{ "producto_id": int, "cantidad": int }` | 201 Created con el subtotal actualizado. | 400 si cantidad < 1 o si el producto no existe en el catálogo. | Restringido (Pedido de usuario). | Autenticado |
+| **S03** | `carrito.html` -> Modificar cantidad | Actualizar cantidad de un ítem | `PUT /api/v1/orders/cart/{item_id}` | `{ "cantidad": int }` | 200 OK con el total del carrito actualizado. | 404 si el ítem no pertenece al carrito; 400 si cantidad < 1. | Restringido. | Autenticado |
+| **S04** | `carrito.html` -> Eliminar de carro | Quitar ítem del carrito | `DELETE /api/v1/orders/cart/{item_id}` | Ninguna (cuerpo vacío). | 204 No Content. | 404 si el ítem no existe en el carrito del usuario. | Restringido. | Autenticado |
+| **S05** | `contacto.html` -> Enviar mensaje | Registrar consulta de soporte | `POST /api/v1/support/contact` | `{ "nombre": string, "email": string, "mensaje": string }` | 201 Created confirmando recepción. | 400 si campos requeridos están vacíos o formato de email es inválido. | Dato personal. | Anónimo / Autenticado |
 
-#### 2.4.1 Diagrama de Clases del Dominio
-![Diagrama de Clases del Dominio](img/diagrama_dominio.png)
+### 1.2 Ejemplos de Contratos JSON (Payloads de Referencia)
 
+#### Respuesta de Catálogo (`GET /api/v1/products`) - Servicio S01:
+```json
+[
+  {
+    "id": 1,
+    "titulo": "Set 3 Lápices Grafito HB",
+    "precio": 1200,
+    "imagen": "img/imagen1.jpg"
+  },
+  {
+    "id": 4,
+    "titulo": "Cuaderno Universitario Mat.",
+    "precio": 2500,
+    "imagen": "img/imagen4.jpg"
+  }
+]
+```
 
-### Módulo 3: Sistemas e integraciones
-
-| Sistema (Microservicio) | Responsabilidad | Datos que administra | Servicios asociados | Dependencias e Integración | Respuesta ante fallos |
-|:---|:---|:---|:---|:---|:---|
-| **inventory** | Catálogo y stock. Define disponibilidad. | Catálogo (título, precio, imagen), categorías. | S01 | Ninguna. Es la fuente de verdad del catálogo. | Retorna caché de productos públicos o 503 si la base de datos cae. |
-| **orders** | Creación, persistencia y ciclo de vida de los pedidos. | Carrito de compras, historial de pedidos. | S02, S03, S04 | Depende de `inventory` y `payments`. | Si `inventory` no responde, rechaza el POST (no se puede asegurar que el producto exista). |
-| **clients** | Registro, autenticación y perfiles. | Usuarios, contraseñas (hash), roles, formulario de contacto. | S05 (y auth) | Ninguna externa. | Modo degradado: los usuarios solo pueden navegar el catálogo como visitantes anónimos. |
-| **payments** | Iniciar pago y verificar resultado con proveedor externo. | Estados de transacción. | Checkout (Simulado) | Depende del proveedor externo (ej. Transbank/MercadoPago). | Si falla el webhook del proveedor, el pedido queda en estado "Pendiente de validación". |
-
-<br>
----
-
-### 3.3 Reglas de Negocio y Validación del Formulario
-
-| Componente / Campo | Regla de Negocio / Comportamiento | Mecanismo Técnico Asociado |
-| :--- | :--- | :--- |
-| **Campos Obligatorios (`required`)** | El sistema impide el envío del formulario si los campos de nombre, correo o mensaje se encuentran vacíos, asegurando la integridad mínima de los datos recolectados. | Atributo nativo HTML5 `required` en los elementos `<input>` y `<textarea>`. |
-| **Validación de Formato de Email** | El campo de correo electrónico exige una estructura válida (presencia de caracteres, símbolo `@` y dominio) antes de permitir la interacción de envío. | Tipo de input específico `type="email"`. |
-| **Canales de Soporte Complementarios** | Sección informativa fija que detalla vías alternativas de atención directa al cliente (teléfono, correo de soporte y ubicación física)[cite: 25]. | Bloque estructurado con datos estáticos en el contenedor de contacto (`+56 9 1234 5678`, `soporte@ofiexpress.cl`, Av. Principal 123)[cite: 25]. |
+#### Solicitud de Inserción al Carrito (`POST /api/v1/orders/cart`) - Servicio S02:
+```json
+{
+  "producto_id": 4,
+  "cantidad": 2
+}
+```
 
 ---
 
-<br>
+## Módulo 2: Clases y Cardinalidades del Dominio
 
-### Módulo 4: Stakeholders y permisos HTTP
+### 2.1 Modelo de Relaciones y Cardinalidades
 
-| Rol / Identidad | ID Servicio | Ruta | Verbo | Decisión | Alcance y condición | Lugar de verificación |
-|:---|:---|:---|:---|:---|:---|:---|
-| Visitante | S01 | `/api/v1/products` | GET | Permitido | Acceso solo a campos públicos del catálogo. | API Gateway (enrutamiento libre). |
-| Visitante | S02 | `/api/v1/orders/cart` | POST | Denegado | No puede crear un pedido persistente sin sesión. | API Gateway (Auth Policy rechaza). |
-| Cliente Autenticado | S02 | `/api/v1/orders/cart` | POST | Permitido | Puede agregar ítems solo a su propio identificador de pedido. | Backend (`orders` valida ID del usuario). |
-| Cliente Autenticado | S04 | `/api/v1/orders/cart/{id}` | DELETE | Permitido | Solo si el ítem le pertenece. | Backend (`orders`). |
-| Administrador | S01 | `/api/v1/products` | POST | Permitido | Puede ingresar nuevos productos al sistema. | Backend (`inventory` valida rol Admin). |
+El modelo del dominio refleja las reglas de negocio de la papelería OfiExpress.
 
-### 4.3 Reglas de Negocio y Lógica de Interfaz
+| Clase Origen | Clase Destino | Multiplicidades | Justificación de la Regla de Negocio |
+| ------ | ------ | ------ | ------ |
+| **Categoria** | **Producto** | `1 -> 0..*` | Una categoría agrupa múltiples productos (ej. "Útiles Escolares"). Un producto pertenece a una única categoría principal. |
+| **Cliente** | **CarritoCompras** | `1 -> 0..1` | Un cliente tiene como máximo un carrito activo en sesión (0 si aún no ha iniciado compra, 1 si tiene ítems agregados). |
+| **CarritoCompras** | **ItemCarrito** | `1 -> 1..*` | Un carrito activo debe contener al menos un ítem agregado desde la interfaz. |
+| **ItemCarrito** | **Producto** | `* -> 1` | Múltiples ítems de carrito de distintos usuarios pueden hacer referencia a un mismo producto del catálogo. |
+| **CatalogService** | **Producto** | Dependencia | `CatalogService` consulta la entidad `Producto` para retornar únicamente los DTOs públicos requeridos por el frontend. |
 
-| Componente / Funcionalidad | Regla de Negocio / Comportamiento Técnico | Mecanismo de Implementación (`app.js`) |
-| :--- | :--- | :--- |
-| **Carrusel Rotativo Automático** | Las diapositivas rotan de forma automática cada 5 segundos. Si llega al final, reinicia el ciclo; si retrocede desde la primera, salta a la última. | `setInterval(() => moveSlide(1), 5000)` con control de límites en `slideIndex`. |
-| **Indicadores Interactivos (*Dots*)** | Permiten al usuario saltar directamente a una diapositiva específica y sincronizan visualmente la clase activa del indicador. | `currentSlide(index)` y actualización de clases `dot`. |
-| **Buscador Desplegable** | Al hacer clic en el botón de búsqueda, se muestra u oculta el contenedor del input, enfocándolo de inmediato para mejorar la accesibilidad. | Alternancia de la clase `.hidden` con `classList.toggle()` y método `.focus()`. |
-| **Mini Carrito Flotante (Viñeta)** | Despliega un resumen flotante del carrito al hacer clic en el botón superior. Se cierra automáticamente si el usuario hace clic fuera del componente. | Escucha de eventos de propagación (`e.stopPropagation()`) y control global de clics en el documento. |
+### 2.2 Diagrama UML de Clases del Dominio
+
+Para representar visualmente la estructura de clases, atributos y relaciones de la capa de dominio:
+
+![Diagrama del Dominio](img/diagrama_dominio.drawio.png)
+
+### 2.3 Reglas de Negocio e Integridad de Datos
+- **Sanitización de Precios:** Los precios se administran internamente como valores enteros en moneda nacional (CLP). Se descarta cualquier precio enviado desde el cliente en los payloads del carrito, consultando siempre el precio real en la base de datos de `inventory`.
+- **Manejo de Estados Nulos:** Si un carrito no posee ítems, el servidor retorna una colección vacía `[]` con código HTTP 200, evitando errores de referencia nula en el frontend.
 
 ---
 
-### Módulo 5: Clases del API Gateway
+## Módulo 3: Sistemas e Integraciones
 
-**5.1 Propósito y Fronteras de Confianza**
-El API Gateway se posiciona como la única puerta de enlace pública de OfiExpress, separando la red externa de los microservicios internos (`inventory`, `orders`, `clients`, `payments`). Su responsabilidad es validar la identidad mediante políticas de autenticación e inyectar el contexto del usuario en las cabeceras internas. Los servicios privados confían en el contexto entregado por el Gateway, pero conservan la responsabilidad de comprobar la autorización de negocio (ej. que un usuario solo modifique su propio pedido).
+### 3.1 Matriz de Responsabilidades y Límites de Microservicios
 
+La arquitectura se divide en cuatro microservicios privados principales aislados en la red interna de contenedores.
 
-**5.2 Entidades y Clases del Gateway (UML)**
+| Sistema | Responsabilidad Principal | Datos Bajo su Autoridad | Servicios Asociados | Dependencias Directas | Respuesta ante Fallos |
+| ------ | ------ | ------ | ------ | ------ | ------ |
+| **`inventory`** | Catálogo, categorías, precios y disponibilidad de stock. | Productos, Categorías, Stock real. | S01 | Ninguna (Fuente primaria). | Retorna caché de productos públicos o 503 Service Unavailable si la base de datos no responde. |
+| **`orders`** | Gestión del carrito, creación y ciclo de vida de pedidos. | Carrito de compras, Historial de pedidos, Ítems. | S02, S03, S04 | Invoca a `inventory` (precios) y `payments` (checkout). | Si `inventory` no responde, rechaza el agregado al carrito para evitar vender ítems sin precio validado. |
+| **`clients`** | Registro de usuarios, autenticación JWT y soporte. | Usuarios, Hashes de contraseñas (`bcrypt`), Contacto. | S05, Auth | Ninguna externa. | Modo degradado: el usuario opera como visitante anónimo navegando el catálogo. |
+| **`payments`** | Integración con pasarelas de pago externas (Webpay/Transbank). | Historial de transacciones de pago. | Checkout | Depende del proveedor externo Webpay. | Si falla la pasarela, la orden permanece en estado `PENDIENTE_PAGO` con reintento habilitado. |
+
+---
+
+## Módulo 4: Stakeholders y Permisos HTTP
+
+### 4.1 Matriz de Permisos y Control de Acceso por Rol
+
+El sistema define reglas estrictas de autorización evaluadas según el verbo HTTP, la ruta y la condición de propiedad del recurso.
+
+| Rol / Identidad | ID Servicio | Ruta Solicitada | Verbo HTTP | Decisión | Alcance y Condición | Punto de Verificación |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| **Visitante** | S01 | `/api/v1/products` | GET | Permitido | Acceso libre a productos públicos del catálogo. | API Gateway (Enrutamiento público). |
+| **Visitante** | S02 | `/api/v1/orders/cart` | POST | Denegado | Requiere inicio de sesión. Retorna 401 Unauthorized. | API Gateway (`AuthenticationPolicy`). |
+| **Cliente Autenticado** | S02 | `/api/v1/orders/cart` | POST | Permitido | Permite agregar ítems únicamente a su propio carrito (`X-User-ID`). | Microservicio `orders`. |
+| **Cliente Autenticado** | S04 | `/api/v1/orders/cart/{id}` | DELETE | Permitido | Solo si el ítem pertenece a la sesión del usuario. | Microservicio `orders` (IDOR check). |
+| **Administrador** | S01-A | `/api/v1/products` | POST | Permitido | Requiere token JWT con rol `Admin`. | Microservicio `inventory`. |
+
+---
+
+## Módulo 5: Clases del API Gateway
+
+### 5.1 Propósito y Fronteras de Confianza
+
+El API Gateway actúa como el único punto de entrada público a la red de microservicios de OfiExpress. Su función principal radica en validar los tokens de acceso, aplicar límites de tasa y enrutar las solicitudes hacia los microservicios privados inyectando cabeceras de contexto seguras (`X-User-ID`, `X-User-Role`).
+
+### 5.2 Diagrama UML del API Gateway
 
 ![Diagrama del API Gateway](img/diagrama_gateway.png)
 
-Para el diagrama de clases del API Gateway, se definen las siguientes entidades y dependencias:
+### 5.3 Descripción de Entidades del Gateway
+- **`ApiGateway`**: Componente central de enrutamiento y aplicación de políticas.
+- **`RouteDefinition`**: Mapeo entre rutas públicas externas y endpoints internos.
+- **`AuthenticationPolicy`**: Verificación de tokens de sesión mediante firma RSA/HMAC.
+- **`AuthorizationPolicy`**: Validación de permisos basados en roles por ruta y verbo HTTP.
+- **`SecretProvider`**: Gestor de secretos para obtener claves sin exponerlas en el código fuente.
 
-*   **`ApiGateway`:** Clase principal que expone los endpoints públicos y enruta el tráfico. Tiene multiplicidad `1 -> 1..*` con `RouteDefinition`.
-*   **`RouteDefinition`:** Define la regla de enrutamiento (verbo, ruta externa, ruta interna destino).
-*   **`AuthenticationPolicy`:** Intercepta la solicitud para extraer y validar el token (ej. JWT).
-*   **`AuthorizationPolicy`:** Verifica si el rol extraído tiene permiso técnico para acceder a la ruta solicitada.
-*   **`SecretProvider`:** Proveedor seguro (gestor de secretos) del cual el Gateway depende para obtener las claves de firma y validación de tokens sin exponerlas en el código.
+---
 
-**5.3 Recorrido de Solicitudes (Ejemplos de Políticas)**
+## Módulo 6: Rutas y Secretos de Integración
 
-| Tipo de Solicitud | Flujo y Comportamiento del API Gateway |
-| :--- | :--- |
-| **Solicitud Autorizada (GET a Carrito Propio)** | 1. Cliente envía GET a `/api/v1/orders/cart`.<br>2. `AuthenticationPolicy` extrae el token y lo valida con `SecretProvider`.<br>3. Inyecta el ID del cliente en la cabecera interna.<br>4. Enruta a `orders`. El microservicio verifica la propiedad y retorna 200 OK. |
-| **Solicitud Denegada (Intento de borrar producto)** | 1. Cliente envía DELETE a `/api/v1/products/1`.<br>2. Gateway valida la identidad, pero `AuthorizationPolicy` detecta que la ruta exige rol Administrador.<br>3. El Gateway bloquea la solicitud y retorna `403 Forbidden` inmediatamente, protegiendo la red privada y sin contactar a `inventory`. |
+### 6.1 Matriz de Enrutamiento del API Gateway
+
+| ID Servicio | Gateway | Verbo | Ruta Externa | Acceso y Rol | Sistema y Ruta Destino Interno | Controles Técnicos | Referencia de Credencial |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| **S01** | ApiGateway | GET | `/api/v1/products` | Anónimo | `inventory:8081/products` | Filtro de parámetros, sanitización y límite de tasa (100 req/min). | `ref:inventory-read-token` |
+| **S01-A** | ApiGateway | POST | `/api/v1/products` | Administrador | `inventory:8081/products` | Validación JWT, rol `Admin`, inyección cabecera `X-User-Role`. | `ref:inventory-admin-key` |
+| **S02** | ApiGateway | POST | `/api/v1/orders/cart` | Cliente | `orders:8082/cart` | Verificación JWT, inyección `X-User-ID`, validación de campos. | `ref:orders-service-key` |
+| **S03** | ApiGateway | PUT | `/api/v1/orders/cart/{item_id}` | Cliente | `orders:8082/cart/{item_id}` | Validación de pertenencia del ítem según `X-User-ID`. | `ref:orders-service-key` |
+| **S04** | ApiGateway | DELETE | `/api/v1/orders/cart/{item_id}` | Cliente | `orders:8082/cart/{item_id}` | Verificación de propiedad antes de remover ítem. | `ref:orders-service-key` |
+| **S05** | ApiGateway | POST | `/api/v1/support/contact` | Anónimo / Cliente | `clients:8083/contact` | Sanitización HTML contra XSS, validación formato email RFC 5322. | `ref:clients-contact-key` |
+| **S06** | ApiGateway | POST | `/api/v1/payments/checkout` | Cliente | `payments:8084/checkout` | Verificación de token JWT, firma HMAC del pedido. | `ref:payments-transbank-secret` |
+| **GQL01** | ApiGateway | POST | `/graphql` | Cliente | `graphql-gateway:4000/graphql` | Validación JWT, análisis AST de profundidad (profundidad ≤ 3). | `ref:graphql-internal-secret` |
+
+### 6.2 Inventario Simbólico de Secretos de Integración
+
+| Referencia Simbólica | Tipo de Credencial | Emisor | Consumidor | Finalidad del Secreto | Almacenamiento Seguro | Política de Rotación |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| `ref:jwt-signing-key` | Clave Asimétrica RSA-256 | `clients` | `ApiGateway`, `graphql-gateway` | Firma y verificación de tokens JWT. | Vault Secret Engine (`/kv/auth/jwt`) | Rotación automática cada 30 días. |
+| `ref:inventory-read-token` | Token Interno | Vault Authority | `ApiGateway` | Consultar catálogo e inventario. | Vault Secret Engine (`/kv/services/inventory`) | Rotación semestral. |
+| `ref:orders-service-key` | API Key Interna | Vault Authority | `ApiGateway` | Enrutamiento de peticiones del carrito. | Vault Secret Engine (`/kv/services/orders`) | Rotación trimestral. |
+| `ref:payments-transbank-secret` | Private API Secret | Transbank | `payments` | Confirmación de transacciones de pago. | Vault Secret Engine (`/kv/payments/transbank`) | Según ciclo del proveedor. |
+
+---
+
+## Módulo 7: Datos Sensibles y Secretos del Cliente
+
+### 7.1 Clasificación y Matriz de Datos del Negocio
+
+| Elemento de Dato | Finalidad de Negocio | Clasificación | Sistema Custodio | Roles Autorizados | Representación Frontend | Medidas de Protección |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| **Catálogo de Productos** | Presentación de catálogo y buscador. | Dato Público | `inventory` | Anónimo, Cliente, Admin | Visible en `index.html` y `categorias.html`. | Sin restricción de lectura. |
+| **Nombre y Email** | Identificación de usuario y notificaciones. | Dato Personal | `clients` | Cliente Propietario, Admin | Visible en perfil y cabecera de sesión. | TLS 1.3 en tránsito, acceso por `X-User-ID`. |
+| **Dirección de Despacho** | Despacho de compras. | Personal Restringido | `orders` | Cliente Propietario, Operador | Visible solo en resumen (`carrito.html`). | Cifrado en reposo (AES-256), sin logs. |
+| **Contraseña** | Autenticación de usuario. | Credencial Sensible | `clients` | Ninguno (Solo motor de auth) | Campo enmascarado (`<input type="password">`). | Hash `bcrypt` con sal (factor de costo 12). |
+| **Token de Sesión (JWT)** | Mantener sesión del cliente. | Credencial Efímera | Frontend (Cookie) | Cliente Autenticado | Guardado en Cookie `HttpOnly; Secure`. | Expiración corta (2 horas), antirrobo XSS. |
+
+### 7.2 Decisión Explícita sobre Secretos del Cliente
+**Decisión**: La aplicación OfiExpress **NO almacena ni custodia secretos ni claves privadas pertenecientes a los clientes**.
+
+**Fundamentación**:
+1. **Pasarela de Pagos Externalizada**: Los datos bancarios y números de tarjeta son procesados exclusivamente en la pasarela externa certificada (Webpay/Transbank). El backend de OfiExpress solo recibe tokens transaccionales de un solo uso.
+2. **Hasheado Adaptativo**: Las contraseñas se almacenan como hashes irreversibles `bcrypt` con sal individual, impidiendo la lectura directa incluso para administradores de bases de datos.
+
+### 7.3 Resultados de Casos de Prueba de Seguridad
+1. **Prueba SEC-01 (Acceso Anónimo a Recurso Protegido)**: Intento `POST /api/v1/orders/cart` sin token -> Rechazado con HTTP 401.
+2. **Prueba SEC-02 (Consulta IDOR de Pedido Ajeno)**: Usuario A solicitando pedido del Usuario B -> Rechazado con HTTP 403 Forbidden.
+3. **Prueba SEC-03 (Manipulación de Precios desde el Frontend)**: Inyección de `precio: 10` en el payload -> Rechazado; el servidor re-obtiene el precio de `inventory`.
+
+---
+
+## Módulo 8: Separación Privada y Agregaciones GraphQL
+
+### 8.1 Mapa de Clasificación de Servicios por Naturaleza
+
+| Microservicio | Naturaleza | Responsabilidad Principal | Datos Bajo su Autoridad | Contrato Primario | Dependencias Directas |
+| ------ | ------ | ------ | ------ | ------ | ------ |
+| **`inventory`** | Dominio / Catálogo | Gestión del catálogo, precios y stock. | Productos, Categorías, Stock. | REST / HTTP (Puerto 8081) | Ninguna. |
+| **`orders`** | Transaccional | Gestión del carrito y pedidos. | Carrito de compras, Pedidos. | REST / HTTP (Puerto 8082) | Invoca a `inventory`. |
+| **`clients`** | Autenticación / Perfil | Registro de clientes, JWT y soporte. | Usuarios, Hashes, Mensajes. | REST / HTTP (Puerto 8083) | Ninguna. |
+| **`payments`** | Integrador Transaccional | Pasarela de pagos externa. | Historial de pagos. | REST / HTTP (Puerto 8084) | Transbank / Webpay. |
+| **`graphql-gateway`** | Agregación Privada | Consolidar vistas complejas en una consulta. | Sin DB propia. | GraphQL / HTTP (Puerto 4000) | Invoca a `orders`, `inventory` y `clients`. |
+
+### 8.2 Schema GraphQL (`schema.graphql`)
+
+```graphql
+type Producto {
+  id: ID!
+  titulo: String!
+  precio: Int!
+  imagen: String!
+}
+
+type ItemPedido {
+  id: ID!
+  cantidad: Int!
+  subtotal: Int!
+  producto: Producto!
+}
+
+type ClientePerfil {
+  id: ID!
+  nombre: String!
+  email: String!
+}
+
+type PedidoResumen {
+  id: ID!
+  estado: String!
+  total: Int!
+  cliente: ClientePerfil!
+  items: [ItemPedido!]!
+  fechaCreacion: String!
+}
+
+type Query {
+  obtenerPedidoResumen(pedidoId: ID!): PedidoResumen
+}
+```
+
+### 8.3 Resolver de Agregación (`resolvers.js`)
+
+```javascript
+const resolvers = {
+  Query: {
+    obtenerPedidoResumen: async (_, { pedidoId }, context) => {
+      if (!context.userId) throw new Error("No autorizado");
+
+      // 1. Consulta a microservicio 'orders'
+      const orderRes = await fetch(`http://orders:8082/internal/orders/${pedidoId}`);
+      if (!orderRes.ok) throw new Error("Pedido no encontrado");
+      const orderData = await orderRes.json();
+
+      if (orderData.cliente_id !== context.userId) {
+        throw new Error("Acceso denegado al pedido solicitado");
+      }
+
+      // 2. Consulta a microservicio 'clients'
+      const clientRes = await fetch(`http://clients:8083/internal/clients/${orderData.cliente_id}`);
+      const clientData = await clientRes.json();
+
+      // 3. Resolución en paralelo de productos desde 'inventory'
+      const itemsConProducto = await Promise.all(
+        orderData.items.map(async (item) => {
+          const prodRes = await fetch(`http://inventory:8081/products/${item.producto_id}`);
+          const prodData = await prodRes.json();
+          return {
+            id: item.id,
+            cantidad: item.cantidad,
+            subtotal: prodData.precio * item.cantidad,
+            producto: prodData
+          };
+        })
+      );
+
+      return {
+        id: orderData.id,
+        estado: orderData.estado,
+        total: itemsConProducto.reduce((acc, i) => acc + i.subtotal, 0),
+        cliente: {
+          id: clientData.id,
+          nombre: clientData.nombre,
+          email: clientData.email
+        },
+        items: itemsConProducto,
+        fechaCreacion: orderData.fecha_creacion
+      };
+    }
+  }
+};
+```
+
+---
+
+## Módulo 9: Analítica y Comunicación gRPC (ADR-001)
+
+### Architectural Decision Record (ADR-001)
+
+- **Título**: Evaluacion de Aplicabilidad de gRPC y Servicios de Analítica en Papelería OfiExpress
+- **Estado**: Aprobado
+- **Contexto**: Evaluación de la necesidad de comunicación binaria gRPC y clusters de procesamiento analítico Big Data.
+- **Decisión**:
+  1. **No aplicabilidad de Big Data**: El volumen proyectado (1,000 SKUs, 500-1,500 pedidos/día) se resuelve eficientemente con réplicas de lectura PostgreSQL y caché Redis (TTL 1h).
+  2. **Aplicabilidad de gRPC Unary para Reserva de Stock**: Se adopta gRPC Unary interno entre `orders` e `inventory` para evitar condiciones de carrera durante el Checkout.
+
+#### Contrato Proto (`inventory_service.proto`):
+```protobuf
+syntax = "proto3";
+
+package inventory;
+
+service InventoryService {
+  rpc ReservarStock (ReservaRequest) returns (ReservaResponse);
+}
+
+message ItemReserva {
+  int32 producto_id = 1;
+  int32 cantidad = 2;
+}
+
+message ReservaRequest {
+  string pedido_id = 1;
+  repeated ItemReserva items = 2;
+}
+
+message ReservaResponse {
+  bool exito = 1;
+  string mensaje = 2;
+  int32 tiempo_expiracion_segundos = 3;
+}
+```
+
+---
+
+## Módulo 10: Backend Completo e Integración Verificable
+
+### 10.1 Estructura del Repositorio del Backend
+
+```text
+Backend/
+├── img/
+│   ├── diagrama_dominio.drawio.png
+│   └── diagrama_gateway.png
+├── api-gateway/
+│   ├── src/
+│   │   ├── routes/
+│   │   ├── policies/
+│   │   │   └── auth.js
+│   │   └── index.js
+│   ├── test.js
+│   ├── package.json
+│   └── Dockerfile
+├── services/
+│   ├── inventory/
+│   │   ├── src/
+│   │   │   ├── index.js
+│   │   │   └── grpc_server.js
+│   │   ├── proto/
+│   │   │   └── inventory_service.proto
+│   │   ├── package.json
+│   │   └── Dockerfile
+│   ├── orders/
+│   │   ├── src/
+│   │   │   └── index.js
+│   │   ├── package.json
+│   │   └── Dockerfile
+│   ├── clients/
+│   │   ├── src/
+│   │   │   └── index.js
+│   │   ├── package.json
+│   │   └── Dockerfile
+│   ├── payments/
+│   │   ├── src/
+│   │   │   └── index.js
+│   │   ├── package.json
+│   │   └── Dockerfile
+│   └── graphql-gateway/
+│       ├── src/
+│       │   ├── schema.graphql
+│       │   ├── resolvers.js
+│       │   └── index.js
+│       ├── package.json
+│       └── Dockerfile
+├── config/
+│   └── .env.example
+├── docker-compose.yml
+├── json.json
+└── readme.md
+```
+
+### 10.2 Comandos de Despliegue Reproducible
+
+```bash
+# 1. Copiar archivo de variables de entorno
+cp config/.env.example .env
+
+# 2. Levantar la red de microservicios con Docker Compose
+docker-compose up --build -d
+
+# 3. Verificar estado de salud de la red
+curl http://localhost:8080/health
+
+# 4. Ejecutar suite de pruebas integradas
+docker-compose exec api-gateway npm test
+```
+
+---
