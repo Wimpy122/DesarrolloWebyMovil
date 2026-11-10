@@ -1,0 +1,150 @@
+[  
+  {
+    "modulo": "Módulo 1: Catálogo y Estructura Base",
+    "tienda": "OfiExpress",
+    "categorias": [
+      {
+        "nombre_categoria": "Útiles Escolares",
+        "productos": [
+          {
+            "id": 1,
+            "titulo": "Set 3 Lápices Grafito HB",
+            "precio": 1200,
+            "imagen": "img/imagen1.jpg"
+          },
+          {
+            "id": 2,
+            "titulo": "Goma de Borrar Miga x2",
+            "precio": 800,
+            "imagen": "img/imagen2.jpg"
+          },
+          {
+            "id": 3,
+            "titulo": "Regla Acrílica 30cm",
+            "precio": 1000,
+            "imagen": "img/imagen3.jpg"
+          }
+        ]
+      },
+      {
+        "nombre_categoria": "Cuadernos y Papel",
+        "productos": [
+          {
+            "id": 4,
+            "titulo": "Cuaderno Universitario Mat.",
+            "precio": 2500,
+            "imagen": "img/imagen4.jpg"
+          },
+          {
+            "id": 5,
+            "titulo": "Block de Dibujo Mediano",
+            "precio": 1800,
+            "imagen": "img/imagen5.png"
+          },
+          {
+            "id": 6,
+            "titulo": "Notas Adhesivas 100h",
+            "precio": 1500,
+            "imagen": "img/imagen6.jpg"
+          }
+        ]
+      },
+      {
+        "nombre_categoria": "Oficina",
+        "productos": [
+          {
+            "id": 7,
+            "titulo": "Resma Papel Carta 500h",
+            "precio": 5500,
+            "imagen": "img/imagen7.png"
+          },
+          {
+            "id": 8,
+            "titulo": "Archivador Oficio Lomo Ancho",
+            "precio": 3200,
+            "imagen": "img/imagen8.jpg"
+          },
+          {
+            "id": 9,
+            "titulo": "Caja Clips Metálicos x100",
+            "precio": 900,
+            "imagen": "img/imagen9.jpg"
+          }
+        ]
+      },
+      {
+        "nombre_categoria": "Arte y Diseño",
+        "productos": [
+          {
+            "id": 10,
+            "titulo": "Set 12 Acuarelas Profesionales",
+            "precio": 8900,
+            "imagen": "img/imagen10.jpg"
+          },
+          {
+            "id": 11,
+            "titulo": "Estuche 6 Pinceles Mixtos",
+            "precio": 4500,
+            "imagen": "img/imagen11.jpg"
+          },
+          {
+            "id": 12,
+            "titulo": "Caja 24 Lápices Acuarelables",
+            "precio": 12000,
+            "imagen": "img/imagen12.jpg"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "modulo": "Módulo 3: Contacto y Servicio al Cliente",
+    "formulario": {
+      "accion": "#",
+      "metodo": "POST",
+      "campos": [
+        {
+          "nombre": "nombre",
+          "tipo": "text",
+          "etiqueta": "Nombre Completo",
+          "placeholder": "Ej. Juan Pérez",
+          "requerido": true
+        },
+        {
+          "nombre": "email",
+          "tipo": "email",
+          "etiqueta": "Correo Electrónico",
+          "placeholder": "tu@correo.com",
+          "requerido": true
+        },
+        {
+          "nombre": "mensaje",
+          "tipo": "textarea",
+          "filas": 5,
+          "etiqueta": "Mensaje o Consulta",
+          "placeholder": "Escribe aquí tu consulta sobre productos, envíos, etc...",
+          "requerido": true
+        }
+      ]
+    }
+  },
+
+  {
+    "modulo": "Módulo 4: Interactividad y Multimedia",
+    "componentes": [
+      {
+        "nombre": "Carrusel Dinámico",
+        "elementos_visuales": ["carousel-inner", "carousel-item", "dot"],
+        "controles": ["moveSlide(step)", "currentSlide(index)"],
+        "automatizacion": "setInterval de 5000ms (5 segundos)"
+      },
+      {
+        "nombre": "Buscador Interactivo",
+        "gatillo": "btn-buscar",
+        "contenedor": "search-container",
+        "comportamiento": "Alterna clase 'hidden' y hace focus automático en el input"
+      }
+    ]
+  }
+]
